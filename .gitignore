@@ -131,3 +131,4 @@ dmypy.json
 # Other files
 .DS_Store
 .vscode
+*.csv
