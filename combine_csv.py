@@ -32,6 +32,7 @@ def combine_files(input_loc: str, path: str = None, verbose: bool = False) -> pd
     for file in os.listdir(input_loc):
         if file.endswith(".csv"):
             df = pd.concat([df, pd.read_csv(DATA_DIRECTORY+file)])
+            df = df.drop_duplicates()
             if verbose:
                 print(f'File: {file}\tDataFrame size: {df.shape}')
 
