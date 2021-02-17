@@ -23,7 +23,18 @@ def read_data(filepath: str) -> pd.DataFrame:
         'home_score', 'away_score'
     ]
     df = pd.read_csv(filepath, usecols=target)
+    print(f'Combined shape: {df.shape}')
     df = df.dropna(subset=['events'])
+
+    df['score_diff'] = df['home_score'] - df['away_score']
+    df['score_diff'] = df['score_diff'].apply(lambda x: 4 if x > 4 else (-4 if x < -4 else x))
+    df['inning_pre'] = df['inning']
+    df['inning'] = df['inning'].apply(lambda x: 9 if x >= 9 else x)
+    df['on_1b'] = df['on_1b'].apply(lambda x: True if x > 0 else False)
+    df['on_2b'] = df['on_2b'].apply(lambda x: True if x > 0 else False)
+    df['on_3b'] = df['on_3b'].apply(lambda x: True if x > 0 else False)
+    df['outs'] = df['outs_when_up']
+
     return df
 
 
@@ -59,7 +70,14 @@ def generate_lookup(path: str = None) -> pd.DataFrame:
 
 if __name__ == "__main__":
     df = read_data(DATA_FILE)
-    print(df.shape)
-
     lookup = generate_lookup()
-    print(lookup.shape)
+
+    pre_merge_size = df.shape
+    df = pd.merge(df, lookup, on=['inning', 'inning_topbot', 'outs', 'on_1b', 'on_2b', 'on_3b', 'score_diff'])
+    post_merge_size = df.shape
+    
+    print(pre_merge_size)
+    print(post_merge_size)
+    assert(pre_merge_size[0] == post_merge_size[0])
+
+    df.to_csv(path_or_buf='./play_events.csv', index=False)
